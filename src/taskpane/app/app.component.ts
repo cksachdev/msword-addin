@@ -1,7 +1,7 @@
 import { Component } from "@angular/core";
 import { NGXLogger } from "ngx-logger";
 const template = require("./app.component.html");
-/* global require, Word */
+import { JSDOM } from "jsdom";
 
 @Component({
   selector: "app-home",
@@ -9,139 +9,62 @@ const template = require("./app.component.html");
 })
 export default class AppComponent {
   welcomeMessage = "Welcome to Word Parser";
-  /*
-TableCollection:
-TableRowCollection:
-
-
-*/
   async run() {
     return Word.run(async context => {
-      var range = context.document.getSelection();
-      var html = range.getHtml();
-      let firstCell = context.document.body.tables.getFirst().getCell(0, 0).body;
-      // let t2firstCell = context.document.body.tables.getFirst().getNext()
+      var htmlbody = context.document.body.getHtml();
 
-      const tableCollection = context.document.body.tables;
-      // let myImages = context.document.body.inlinePictures;
-        const firstPicture = context.document.body.inlinePictures.getFirst();
-                    context.load(firstPicture);
- const base64 = firstPicture.getBase64ImageSrc();
-                    await context.sync();
-                    console.log("This is base 64 value :" + base64.value);
-
-
-      // context.load(myImages);  
-      // await context.sync();
-       // if (myImages.items.length > 0) console.log(myImages.items[0].value());
-      context.load(tableCollection);
       await context.sync();
-            
-            
-      console.log("length of tables collection : " + tableCollection.items.length);
-      for (var i = 0; i < tableCollection.items.length; i++) {
-        var theTable = null;
-        theTable = tableCollection.items[i];
+      console.log("dsfdsfdf");
+      const jsdom = new JSDOM(htmlbody);
+      const { document } = jsdom.window;
+      const tables = document.getElementsByTagName("table");
+      console.log(tables.length);
+      type RowQuestion = {
+        Title: string;
+        topic: string;
+        grade: string;
+        board: string;
+        content: Array<string>;
+        process: Array<string>;
+        level: Array<string>;
+        context: Array<string>;
+        subContext: Array<string>;
+      };
+      for (var i = 0; i < tables.length; i++) {
+        var RowQuestionObj = {} as RowQuestion;
+        var rows = tables[i].rows;
+        var rowslength = rows.length;
+        RowQuestionObj.Title = tables[i].rows[0].textContent.trim();
 
-        var cell1 = theTable.values[0][0];
+        var contentArray = [];
+        var processArray = [];
+        var levelArray = [];
+        var contextArray = [];
+        var subContextArray = [];
 
-        await context.load(theTable, "");
-        await context.sync();
-        var tabledata: string[][] = theTable.values;
-        // insertTableInNewDoc(tabledata);
-        await context.sync();
-        // var myNewDoc = context.application.createDocument();
-        // context.load(myNewDoc);
-        context
-          .sync()
-          .then(function() {})
-          .catch(function(myError) {
-            //otherwise we handle the exception here!
-            //   myNewDoc.open();
-            console.log("Error", myError.message);
-          });
-        var tablerow = theTable.rows;
-        console.log(" Table data is : " + tabledata + typeof tabledata);
-        console.log("Row data is : " + JSON.stringify(tablerow) + typeof tablerow);
-        if (tabledata[0].constructor === Array) console.log("tabledata is 2d array as expected");
-        console.log("Table " + i + " row count is: " + theTable.rowCount.toString());
-        console.log("First cell value for " + i + "table is " + cell1);
-
-        // get all the table data
-        for (var i = 0; i < tabledata.length; i++) {
-          var rowdata = tabledata[i];
-          for (var j = 0; j < rowdata.length; j++) {
-            console.log("table[" + i + "][" + j + "] = " + rowdata[j]);
-          }
+        for (var meta = 3; meta < rowslength - 2; meta++) {
+          if (tables[i].rows[meta].cells[1]) contentArray.push(tables[i].rows[meta].cells[1].textContent.trim());
+          if (tables[i].rows[meta].cells[2]) processArray.push(tables[i].rows[meta].cells[2].textContent.trim());
+          if (tables[i].rows[meta].cells[3]) levelArray.push(tables[i].rows[meta].cells[3].textContent.trim());
+          if (tables[i].rows[meta].cells[4]) contextArray.push(tables[i].rows[meta].cells[4].textContent.trim());
+          if (tables[i].rows[meta].cells[5]) subContextArray.push(tables[i].rows[meta].cells[5].textContent.trim());
         }
+        var boardgradetopic = tables[i].rows[rowslength - 3].textContent.trim();
+        let topicsearch = boardgradetopic.match(/Topic:/i);
+        var topicindex = topicsearch.index + 6;
+        RowQuestionObj.topic = boardgradetopic.substring(topicindex).trim();
+        let gradesearch = boardgradetopic.match(/Grade/i);
+        let gradeindex = gradesearch.index + 5;
+        RowQuestionObj.grade = boardgradetopic.substring(gradeindex, gradeindex + 3).trim();
+        RowQuestionObj.board = boardgradetopic.substr(0, boardgradetopic.indexOf(" "));
+        RowQuestionObj.content = contentArray;
+        RowQuestionObj.process = processArray;
+        RowQuestionObj.level = levelArray;
+        RowQuestionObj.context = contextArray;
+        RowQuestionObj.subContext = subContextArray;
+        // RowQuestionObj.question =tables[i].rows[rowslength - 2].innerHTML;
+        // RowQuestionObj.answer =tables[i].rows[rowslength - 1].innerHTML;
       }
     });
   }
-}
-function insertTableInNewDoc(tableData) {
-  return Word.run(async context => {
-    var myNewDoc = context.application.createDocument();
-    context.load(myNewDoc);
-
-    const paragraph = context.document.body.insertParagraph("Hello World", Word.InsertLocation.end);
-
-    await context.sync();
-
-    var docBody = context.document.body;
-    docBody.insertParagraph(
-      "Office has several versions, including Office 2016, Office 365 Click-to-Run, and Office on the web.",
-      "Start"
-    );
-    myNewDoc.open();
-    var secondParagraph = context.document.body.paragraphs.getFirst().getNext();
-    secondParagraph.insertTable(3, 3, "After", tableData);
-
-    await context.sync();
-  });
-/*
- getBase64EncodedStringsOfImages(link: string): OfficeExtension.IPromise<IImage[]> {
-        var start = performance.now();
-        var imagesArray: IImage[] = [];
-        return this._run(context => {
-            var images = context.document.body.inlinePictures.load();
-            return context.sync().then(() => {
-                for (var i = 0; i < images.items.length; i++) {
-                    var image = <IImage>{
-                        imageFormat: images.items[i].imageFormat,
-                        altTextTitle: images.items[i].altTextTitle,
-                        altTextDescription: images.items[i].altTextDescription,
-                        height: images.items[i].height,
-                        width: images.items[i].width,
-                        hyperlink: images.items[i].hyperlink,
-                        base64ImageSrc: images.items[i].getBase64ImageSrc()
-
-                    }
-                    if (isEmpty(image.hyperlink)) {
-                        var uniqueNumber = new Date().getTime();
-                        var fileName = "Image" + uniqueNumber + "." + image.imageFormat;
-                        image.hyperlink = "images/" + fileName;
-                        image.altTextTitle = "images/" + fileName;
-                        image.altTextDescription = "";
-                        images.items[i].hyperlink = link + "/" + "images/" + fileName;
-                        images.items[i].altTextTitle = "images/" + fileName;
-                        images.items[i].altTextDescription = "";
-                        imagesArray.push(image);
-                    }
-                }
-
-                return context.sync().then(function () {
-                  
-                    return imagesArray;
-                });
-            });
-        });
-    }
-
-
-     static isEmpty(obj: any): boolean {
-        return _.isUndefined(obj) || _.isNull(obj) || _.isEmpty(obj);
-    }
-*/
-
-
 }
