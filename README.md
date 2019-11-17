@@ -1,16 +1,10 @@
-# Office-Addin-TaskPane-Angular
-
-npm run build
-npm start
-Upload manifest.xml to office.com new word document
-Click on Home and open the addin and you can see the typescript code in chrome developer tools
-
+# Office-Addin-TaskPane-Angular-JS
  
 This repository contains the source code used by the [Yo Office generator](https://github.com/OfficeDev/generator-office) when you create a new Office Add-in that appears in the task pane. You can also use this repository as a sample to base your own project from if you choose not to use the generator. 
 
-## TypeScript
+## JavaScript
 
-This template is written using [TypeScript](http://www.typescriptlang.org/). For the JavaScript version of this template, go to [Office-Addin-TaskPane-Angular-JS](https://github.com/OfficeDev/Office-Addin-TaskPane-Angular-JS).
+This template is written using JavaScript. For the TypeScript version of this template, go to [Office-Addin-TaskPane-Angular](https://github.com/OfficeDev/Office-Addin-TaskPane-Angular).
 
 ## Debugging
 

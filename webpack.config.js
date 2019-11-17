@@ -8,30 +8,18 @@ const webpack = require("webpack");
 module.exports = async (env, options) => {
   const dev = options.mode === "development";
   const config = {
-    target: "node",
-    externals: {
-      canvas: "commonjs canvas" // Important (2)
-    },
     devtool: "source-map",
     entry: {
-      polyfill: "@babel/polyfill",
-      taskpane: "./src/taskpane/taskpane.ts",
-      commands: "./src/commands/commands.ts"
-    },
-    resolve: {
-      extensions: [".ts", ".tsx", ".html", ".js"]
+      polyfill: 'babel-polyfill',
+      taskpane: "./src/taskpane/taskpane.js",
+      commands: "./src/commands/commands.js"
     },
     module: {
       rules: [
         {
-          test: /\.ts$/,
+          test: /\.js$/,
           exclude: /node_modules/,
           use: "babel-loader"
-        },
-        {
-          test: /\.tsx?$/,
-          exclude: /node_modules/,
-          use: "ts-loader"
         },
         {
           test: /\.html$/,
@@ -66,8 +54,8 @@ module.exports = async (env, options) => {
     devServer: {
       headers: {
         "Access-Control-Allow-Origin": "*"
-      },
-      https: options.https !== undefined ? options.https : await devCerts.getHttpsServerOptions(),
+      },      
+      https: (options.https !== undefined) ? options.https : await devCerts.getHttpsServerOptions(),
       port: process.env.npm_package_config_dev_server_port || 3000
     }
   };
