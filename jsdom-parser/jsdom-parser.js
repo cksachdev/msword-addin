@@ -30,7 +30,10 @@ const initJob = async () => {
                     htmlstring = htmlstring.replace(imgstring, base64image);
 
                 }
-                /* fs.writeFile("base64convert.html", htmlstring, function(err) {
+            /*  htmlstring = htmlstring.replace(/â€™/g, '\''); 
+                htmlstring = htmlstring.replace(/â€œ/g, '\“');
+                htmlstring = htmlstring.replace(/â€/g, '\”'); */
+             /*    fs.writeFile("base64convert1.html", htmlstring, function(err) {
 
                      if (err) {
                          return console.log(err);
@@ -41,14 +44,16 @@ const initJob = async () => {
                 const editdom = new JSDOM(htmlstring);
                 var editdocument = editdom.window.document;
                 const tables = editdocument.getElementsByTagName("table");
-                console.log(tables.length);
+                
 
                 for (var i = 0; i < tables.length; i++) {
                     var RowQuestionObj = {};
                     var rows = tables[i].rows;
                     var rowslength = rows.length;
-                    RowQuestionObj.Title = tables[i].rows[0].textContent.trim();
-
+                    var title = tables[i].rows[0].textContent.trim();
+                    title = title.replace(/\n/g, '');
+                    RowQuestionObj.Title = title.replace(/Question\:/, '').trim();
+                    console.log(RowQuestionObj.Title);
                     var contentArray = [];
                     var processArray = [];
                     var levelArray = [];
@@ -63,13 +68,14 @@ const initJob = async () => {
                         if (tables[i].rows[meta].cells[5]) subContextArray.push(tables[i].rows[meta].cells[5].textContent.trim());
                     }
                     var boardgradetopic = tables[i].rows[rowslength - 3].textContent.trim();
+                    boardgradetopic = boardgradetopic.replace(/\n/g, '');
                     let topicsearch = boardgradetopic.match(/Topic:/i);
                     var topicindex = topicsearch.index + 6;
                     RowQuestionObj.topic = boardgradetopic.substring(topicindex).trim();
                     let gradesearch = boardgradetopic.match(/Grade/i);
                     let gradeindex = gradesearch.index + 5;
                     RowQuestionObj.grade = boardgradetopic.substring(gradeindex, gradeindex + 3).trim();
-                    RowQuestionObj.board = boardgradetopic.substr(0, boardgradetopic.indexOf(' '));
+                    RowQuestionObj.board = boardgradetopic.substr(0, boardgradetopic.indexOf(' ')).trim();
                     RowQuestionObj.content = contentArray;
                     RowQuestionObj.process = processArray;
                     RowQuestionObj.level = levelArray;
@@ -103,15 +109,15 @@ const initJob = async () => {
                     // console.log("length of rows is : " + rows.length);
                     // console.log(RowQuestionObj);
 
-                    savePisaQuestionToDB(RowQuestionObj, function(err, result) {
-                        if (err) {
+                      savePisaQuestionToDB(RowQuestionObj, function(err, result) {
+                          if (err) {
 
-                            console.log("error saving to db");
+                              console.log("error saving to db");
 
-                        } else {
+                          } else {
 
-                        }
-                    });
+                          }
+                      });
 
                 }
 
