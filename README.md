@@ -1,4 +1,23 @@
 # Office-Addin-TaskPane-Angular-JS
+
+```
+npm install 
+npm run build
+npm run start
+
+Download helloworld.html and place the path in jsdom-parser.js file line no 4
+
+cd jsdom-parser
+npm install
+Ensure MongoDB is running
+node jsdom-parser.js
+This will populate the questions in mongodb under pisadb
+
+Testing the script. 
+node test-html.js 
+The above script will dump the 0th index question and answer to separate html files for local verification.
+
+```
  
 This repository contains the source code used by the [Yo Office generator](https://github.com/OfficeDev/generator-office) when you create a new Office Add-in that appears in the task pane. You can also use this repository as a sample to base your own project from if you choose not to use the generator. 
 
