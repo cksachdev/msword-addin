@@ -1,16 +1,46 @@
 const { JSDOM } = require('jsdom');
 const dbConnection = require('./services/dbConnection.js');
 const pisaModel = require('./models/pisadoc.model');
-const fileLocation = '/Users/saket/Downloads/helloworld.html';
-
+const fileLocation = '/Users/saket/Documents/diksha-tools/doc/js-parser-html/js-parser/jsdom-parser/PISA_sample_html.html';
+const fs = require('fs');
+const html_folder_location = "PISA_sample_html_files";
 const initJob = async () => {
     try {
         JSDOM.fromFile(fileLocation)
             .then((dom) => {
-
+                htmlstring = dom.serialize();
                 var document = dom.window.document;
-                console.log(document);
-                const tables = document.getElementsByTagName("table");
+                var images = document.getElementsByTagName('img');
+
+                for (var i = 0; i < images.length; i++) {
+                    var imgsrc = images[i].src;
+                    imgsrcf = imgsrc.replace('file\:\/\/', '');
+                    var lastslash = imgsrcf.lastIndexOf("\/");
+
+                    var filestring = imgsrcf.substring(lastslash);
+
+                    var imgstring = html_folder_location + filestring;
+
+
+                    var bitmap = fs.readFileSync(imgsrcf);
+                    // convert binary data to base64 encoded string
+                    var imgbase64 = new Buffer(bitmap).toString('base64');
+                    var base64image = `data:image/png;base64,${imgbase64}`;
+
+                    htmlstring = htmlstring.replace(imgstring, base64image);
+
+                }
+                /* fs.writeFile("base64convert.html", htmlstring, function(err) {
+
+                     if (err) {
+                         return console.log(err);
+                     }
+
+                     console.log("The base64convert file was saved!");
+                 });*/
+                const editdom = new JSDOM(htmlstring);
+                var editdocument = editdom.window.document;
+                const tables = editdocument.getElementsByTagName("table");
                 console.log(tables.length);
 
                 for (var i = 0; i < tables.length; i++) {
@@ -47,7 +77,27 @@ const initJob = async () => {
                     RowQuestionObj.subContext = subContextArray;
                     RowQuestionObj.question = "<HTML><HEAD></HEAD><BODY>" + tables[i].rows[rowslength - 2].innerHTML + "</BODY></HTML>";
                     RowQuestionObj.answer = "<HTML><HEAD></HEAD><BODY>" + tables[i].rows[rowslength - 1].innerHTML + "</BODY></HTML>";
+                    /*  if (i === 5) {
+                          fs.writeFile(`question${i}.html`, RowQuestionObj.question, function(err) {
 
+                              if (err) {
+                                  return console.log(err);
+                              }
+
+                              console.log("The question file was saved!");
+                          });
+
+                             fs.writeFile(`answer${i}.html`, RowQuestionObj.answer, function(err) {
+
+                                 if (err) {
+                                     return console.log(err);
+                                 }
+
+                                 console.log("The answer file was saved!");
+
+                             });
+
+                      }*/
 
 
                     // console.log("length of rows is : " + rows.length);
